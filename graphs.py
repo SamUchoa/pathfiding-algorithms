@@ -3,7 +3,7 @@ import numpy as np
 class Graph:
     def __init__(self, adjacency_matrix: np.ndarray, directed: bool = False):
         self.adjacency_matrix = adjacency_matrix
-        self.vertices_number = adjacency_matrix.ndim
+        self.vertices_number = adjacency_matrix.shape[0]
         self.edges_number = np.count_nonzero(adjacency_matrix)
         self.directed = directed
 
