@@ -14,7 +14,7 @@ pygame.display.set_caption("Pathfinding")
 
 grafo = np.array([[0,1,1,0],
                   [1,0,0,1],
-                  [1,0,0,0],
+                  [1,0,0,1],
                   [0,1,1,0]])
 
 teste = graphs.Graph(grafo)
@@ -25,14 +25,16 @@ positions = np.hstack((position_x, position_y))
 colors = np.array([[255,0,255,255],[255,255,255,255],[255,255,255,255],[255,255,255,255]])
 
 def draw_graph(graph: graphs.Graph, positions: np.ndarray, colors: np.ndarray):
-    for vertex in range(teste.vertices_number):
-        vertex_color = colors[vertex,:].tolist()
+    for row in range(graph.vertices_number):
+        vertex_color = colors[row,:].tolist()
+        vertex_position = positions[row,:].tolist()
 
-        pygame.draw.circle(screen, vertex_color, positions[vertex,:].tolist(), 10)
+        pygame.draw.circle(screen, vertex_color, vertex_position, 10)
 
-        vertex_edges = graph.adjacency_matrix[vertex,:].nonzero()[0]
-        for edge in vertex_edges:
-            pygame.draw.line(screen, vertex_color,  positions[vertex].tolist(),positions[edge].tolist(), 5)
+        for col in range(graph.vertices_number):
+            item = graph.adjacency_matrix[row,col]
+            if col >= row and item:
+                pygame.draw.line(screen, vertex_color,  positions[row].tolist(), positions[col].tolist(), 5)
 
 
 while True:
