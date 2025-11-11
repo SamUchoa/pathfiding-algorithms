@@ -22,14 +22,15 @@ position_x = np.random.randint(padding, width - padding, size=(teste.vertices_nu
 position_y = np.random.randint(padding, height - padding, size=(teste.vertices_number,1))
 
 positions = np.hstack((position_x, position_y))
+colors = np.array([[255,255,255],[255,255,255],[255,255,255]])
 
-def draw_graph(graph: graphs.Graph, positions: np.ndarray):
+def draw_graph(graph: graphs.Graph, positions: np.ndarray, colors: np.ndarray):
     for vertex in range(teste.vertices_number):
         pygame.draw.circle(screen, "white", positions[vertex,:].tolist(), 10)
 
         vertex_edges = graph.adjacency_matrix[vertex,:].nonzero()[0]
         for edge in vertex_edges:
-            pygame.draw.line(screen,"white", positions[vertex].tolist(),positions[edge].tolist(), 5)
+            pygame.draw.line(screen, colors[edge,0], positions[vertex].tolist(),positions[edge].tolist(), 5)
 
 
 while True:
