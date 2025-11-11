@@ -10,6 +10,7 @@ padding = 200
 
 background = "#0b3142"
 screen = pygame.display.set_mode((width, height))
+clock = pygame.time.Clock()
 pygame.display.set_caption("Pathfinding")
 
 grafo = np.array([[0,1,1,0],
@@ -38,13 +39,21 @@ def draw_graph(graph: graphs.Graph, positions: np.ndarray, colors: np.ndarray):
 
 
 while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
+    mouse_pos = pygame.mouse.get_pos()
 
     screen.fill(background)
 
     draw_graph(teste, positions, colors)
+    print(teste.vertices_number, teste.edges_number)
 
-    pygame.display.update()
+    for event in pygame.event.get():
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            teste.add_vertex()
+            colors = np.vstack((colors, [255,255,255,255]))
+            positions = np.vstack((positions, mouse_pos))
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
+    pygame.display.flip()
+    clock.tick(60)
+pygame.quit()
