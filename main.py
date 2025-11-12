@@ -74,16 +74,17 @@ while True:
     if mouse_attached[0]:
         index = mouse_attached[1]
         positions[index] = mouse_pos
+        rects[index].center = mouse_pos
+
     if new_edge[0] >= 0 and new_edge[1] >= 0:
         graph.add_edge(*new_edge)
         new_edge = (-1,-1)
-
+    print(mouse_attached)
 
     screen.fill(background)
 
     draw_graph(graph, positions, colors)
 #    print(graph.vertices_number, graph.edges_number)
-    print(new_edge)
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if current_mode == modes[0]:
@@ -91,16 +92,20 @@ while True:
                 colors = np.vstack((colors, [255,255,255,255]))
                 positions = np.vstack((positions, mouse_pos))
 
-                rect = pygame.Rect((0,0), (node_radius, node_radius))
+                error_margin = node_radius * 5
+                rect = pygame.Rect((0,0), (error_margin, error_margin))
                 rect.center = mouse_pos
                 rects.append(rect)
+
             if current_mode == modes[1]:
                 if mouse_attached[0]:
                     mouse_attached = (False, -1)
                     continue
                 for index, rect in enumerate(rects):
                     if rect.collidepoint(mouse_pos):
+                        print("COLIDIU"*60)
                         mouse_attached = (True, index)
+
             if current_mode == modes[2]:
                 for index, rect in enumerate(rects):
                     if rect.collidepoint(mouse_pos):
