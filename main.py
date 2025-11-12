@@ -45,6 +45,15 @@ for position in positions:
 #nodes is attached
 # TODO: refactor to OOP
 mouse_attached = (False, -1)
+new_edge = (-1, -1)
+
+def check_new_edge(end: int, new_edge: tuple[int]) -> tuple[int]:
+    if end in new_edge:
+        return new_edge
+    if new_edge[0] < 0:
+        return tuple((end, new_edge[1]))
+    elif new_edge[0] >= 0:
+        return tuple((new_edge[0], end))
 
 def draw_graph(graph: graphs.Graph, positions: np.ndarray, colors: np.ndarray):
     for row in range(graph.vertices_number):
@@ -65,13 +74,16 @@ while True:
     if mouse_attached[0]:
         index = mouse_attached[1]
         positions[index] = mouse_pos
+    if new_edge[0] >= 0 and new_edge[1] >= 0:
+        graph.add_edge(*new_edge)
+        new_edge = (-1,-1)
 
 
     screen.fill(background)
 
     draw_graph(graph, positions, colors)
 #    print(graph.vertices_number, graph.edges_number)
-
+    print(new_edge)
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if current_mode == modes[0]:
@@ -89,6 +101,11 @@ while True:
                 for index, rect in enumerate(rects):
                     if rect.collidepoint(mouse_pos):
                         mouse_attached = (True, index)
+            if current_mode == modes[2]:
+                for index, rect in enumerate(rects):
+                    if rect.collidepoint(mouse_pos):
+                        new_edge = check_new_edge(index, new_edge)
+                
 
 
         if event.type == pygame.KEYDOWN:
