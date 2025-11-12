@@ -8,6 +8,8 @@ height = 600
 width = 1200
 padding = 200
 
+node_radius = 10
+
 background = "#0b3142"
 screen = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
@@ -33,12 +35,23 @@ colors = np.array([[255,0,255,255],[255,255,255,255],[255,255,255,255],[255,255,
 modes = [0, 1, 2]
 current_mode = modes[0]
 
+rects = []
+for position in positions:
+    rect = pygame.Rect((0,0), (node_radius, node_radius))
+    rect.center = position
+    rects.append(rect)
+
+#if the node position is attached to the mouse position and wich of the 
+#nodes is attached
+# TODO: refactor to OOP
+mouse_attached = (False, -1)
+
 def draw_graph(graph: graphs.Graph, positions: np.ndarray, colors: np.ndarray):
     for row in range(graph.vertices_number):
         vertex_color = colors[row,:].tolist()
         vertex_position = positions[row,:].tolist()
 
-        pygame.draw.circle(screen, vertex_color, vertex_position, 10)
+        pygame.draw.circle(screen, vertex_color, vertex_position, node_radius)
 
         for col in range(graph.vertices_number):
             item = graph.adjacency_matrix[row,col]
@@ -49,10 +62,15 @@ def draw_graph(graph: graphs.Graph, positions: np.ndarray, colors: np.ndarray):
 while True:
     mouse_pos = pygame.mouse.get_pos()
 
+    if mouse_attached[0]:
+        index = mouse_attached[1]
+        positions[index] = mouse_pos
+
+
     screen.fill(background)
 
     draw_graph(graph, positions, colors)
-    print(graph.vertices_number, graph.edges_number)
+#    print(graph.vertices_number, graph.edges_number)
 
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
@@ -60,6 +78,18 @@ while True:
                 graph.add_vertex()
                 colors = np.vstack((colors, [255,255,255,255]))
                 positions = np.vstack((positions, mouse_pos))
+
+                rect = pygame.Rect((0,0), (node_radius, node_radius))
+                rect.center = mouse_pos
+                rects.append(rect)
+            if current_mode == modes[1]:
+                if mouse_attached[0]:
+                    mouse_attached = (False, -1)
+                    continue
+                for index, rect in enumerate(rects):
+                    if rect.collidepoint(mouse_pos):
+                        mouse_attached = (True, index)
+
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_1:
