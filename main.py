@@ -13,17 +13,25 @@ screen = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
 pygame.display.set_caption("Pathfinding")
 
-grafo = np.array([[0,1,1,0],
-                  [1,0,0,1],
-                  [1,0,0,1],
-                  [0,1,1,0]])
+adjacency_matrix = np.array([[0,1,1,0],
+                             [1,0,0,1],
+                             [1,0,0,1],
+                             [0,1,1,0]])
 
-teste = graphs.Graph(grafo)
-position_x = np.random.randint(padding, width - padding, size=(teste.vertices_number,1))
-position_y = np.random.randint(padding, height - padding, size=(teste.vertices_number,1))
+graph = graphs.Graph(adjacency_matrix)
+position_x = np.random.randint(padding, width - padding, size=(graph.vertices_number,1))
+position_y = np.random.randint(padding, height - padding, size=(graph.vertices_number,1))
 
 positions = np.hstack((position_x, position_y))
 colors = np.array([[255,0,255,255],[255,255,255,255],[255,255,255,255],[255,255,255,255]])
+
+"""
+0 - Add vertex
+1 - Move vertex
+2 - Add edge
+"""
+modes = [0, 1, 2]
+current_mode = modes[0]
 
 def draw_graph(graph: graphs.Graph, positions: np.ndarray, colors: np.ndarray):
     for row in range(graph.vertices_number):
@@ -43,14 +51,23 @@ while True:
 
     screen.fill(background)
 
-    draw_graph(teste, positions, colors)
-    print(teste.vertices_number, teste.edges_number)
+    draw_graph(graph, positions, colors)
+    print(graph.vertices_number, graph.edges_number)
 
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-            teste.add_vertex()
-            colors = np.vstack((colors, [255,255,255,255]))
-            positions = np.vstack((positions, mouse_pos))
+            if current_mode == modes[0]:
+                graph.add_vertex()
+                colors = np.vstack((colors, [255,255,255,255]))
+                positions = np.vstack((positions, mouse_pos))
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_1:
+                current_mode = modes[0]
+            if event.key == pygame.K_2:
+                current_mode = modes[1]
+            if event.key == pygame.K_3:
+                current_mode = modes[2]
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
