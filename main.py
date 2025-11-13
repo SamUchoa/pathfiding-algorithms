@@ -1,5 +1,6 @@
 import pygame 
 import numpy as np
+import draw_graphs
 import graphs
 
 pygame.init()
@@ -27,99 +28,58 @@ position_y = np.random.randint(padding, height - padding, size=(graph.vertices_n
 positions = np.hstack((position_x, position_y))
 colors = np.array([[255,0,255,255],[255,255,255,255],[255,255,255,255],[255,255,255,255]])
 
-"""
-0 - Add vertex
-1 - Move vertex
-2 - Add edge
-"""
-modes = [0, 1, 2]
-current_mode = modes[0]
-
-rects = []
-for position in positions:
-    rect = pygame.Rect((0,0), (node_radius, node_radius))
-    rect.center = position
-    rects.append(rect)
-
-#if the node position is attached to the mouse position and wich of the 
-#nodes is attached
-# TODO: refactor to OOP
-mouse_attached = (False, -1)
-new_edge = (-1, -1)
-
-def check_new_edge(end: int, new_edge: tuple[int]) -> tuple[int]:
-    if end in new_edge:
-        return new_edge
-    if new_edge[0] < 0:
-        return tuple((end, new_edge[1]))
-    elif new_edge[0] >= 0:
-        return tuple((new_edge[0], end))
-
-def draw_graph(graph: graphs.Graph, positions: np.ndarray, colors: np.ndarray):
-    for row in range(graph.vertices_number):
-        vertex_color = colors[row,:].tolist()
-        vertex_position = positions[row,:].tolist()
-
-        pygame.draw.circle(screen, vertex_color, vertex_position, node_radius)
-
-        for col in range(graph.vertices_number):
-            item = graph.adjacency_matrix[row,col]
-            if col >= row and item:
-                pygame.draw.line(screen, vertex_color,  positions[row].tolist(), positions[col].tolist(), 5)
-
+graph_draw_handler = draw_graphs.GraphFigure(positions, node_radius)
 
 while True:
     mouse_pos = pygame.mouse.get_pos()
 
-    if mouse_attached[0]:
-        index = mouse_attached[1]
-        positions[index] = mouse_pos
-        rects[index].center = mouse_pos
+    if graph_draw_handler.mouse_attached["is_attached"]:
+        index = graph_draw_handler.mouse_attached["vertex"]
+        graph_draw_handler.rects[index].center = mouse_pos
 
-    if new_edge[0] >= 0 and new_edge[1] >= 0:
-        graph.add_edge(*new_edge)
-        new_edge = (-1,-1)
-    print(mouse_attached)
+    if graph_draw_handler.new_edge[0] >= 0 and graph_draw_handler.new_edge[1] >= 0:
+        graph.add_edge(*graph_draw_handler.new_edge)
+        graph_draw_handler.new_edge = np.array((-1,-1))
+
+    print(graph_draw_handler.mouse_attached)
 
     screen.fill(background)
 
-    draw_graph(graph, positions, colors)
+    graph_draw_handler.draw_graph(graph, colors, screen)
 #    print(graph.vertices_number, graph.edges_number)
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-            if current_mode == modes[0]:
+            if graph_draw_handler.current_mode == graph_draw_handler.modes[0]:
                 graph.add_vertex()
                 colors = np.vstack((colors, [255,255,255,255]))
-                positions = np.vstack((positions, mouse_pos))
 
-                error_margin = node_radius * 5
+                error_margin = node_radius * 20
                 rect = pygame.Rect((0,0), (error_margin, error_margin))
                 rect.center = mouse_pos
-                rects.append(rect)
+                graph_draw_handler.rects.append(rect)
 
-            if current_mode == modes[1]:
-                if mouse_attached[0]:
-                    mouse_attached = (False, -1)
+            if graph_draw_handler.current_mode == graph_draw_handler.modes[1]:
+                if graph_draw_handler.mouse_attached["is_attached"]:
+                    graph_draw_handler.mouse_attached["is_attached"] = False
+                    graph_draw_handler.mouse_attached["vertex"] = -1
                     continue
-                for index, rect in enumerate(rects):
+                for index, rect in enumerate(graph_draw_handler.rects):
                     if rect.collidepoint(mouse_pos):
                         print("COLIDIU"*60)
-                        mouse_attached = (True, index)
+                        graph_draw_handler.mouse_attached["is_attached"] = True
+                        graph_draw_handler.mouse_attached["vertex"] = index
 
-            if current_mode == modes[2]:
-                for index, rect in enumerate(rects):
-                    if rect.collidepoint(mouse_pos):
-                        new_edge = check_new_edge(index, new_edge)
-                
+            if graph_draw_handler.current_mode == graph_draw_handler.modes[2]:
+                graph_draw_handler.add_edge(mouse_pos)
 
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_1:
-                current_mode = modes[0]
+                graph_draw_handler.current_mode = graph_draw_handler.modes[0]
             if event.key == pygame.K_2:
-                current_mode = modes[1]
+                graph_draw_handler.current_mode = graph_draw_handler.modes[1]
             if event.key == pygame.K_3:
-                current_mode = modes[2]
+                graph_draw_handler.current_mode = graph_draw_handler.modes[2]
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
