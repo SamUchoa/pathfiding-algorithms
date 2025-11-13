@@ -4,7 +4,7 @@ import graphs
 
 
 class GraphFigure:
-    def __init__(self, positions: np.ndarray, node_radius: int):
+    def __init__(self, positions: np.ndarray, node_radius: int, edges_number: int):
         self.node_radius = node_radius
         self.modes = [0, 1, 2]
         self.current_mode = self.modes[0]
@@ -12,28 +12,44 @@ class GraphFigure:
         self.mouse_attached = {"is_attached": False, "vertex": -1}
         self.rects = []
 
+        self.edges = []
+        
+        vertex_number = np.size(positions, axis=0)
+        self.vertex_colors = np.array([[255,255,255]]*vertex_number)
+        self.edge_colors = np.array([[255,255,255]]*edges_number)
+
+
         for position in positions:
             rect = pygame.Rect((0,0), (self.node_radius, self.node_radius))
             rect.center = position
             self.rects.append(rect)
 
-    def draw_graph(self, graph: graphs.Graph, colors: np.ndarray, screen: pygame.Surface):
+    def draw_graph(self, graph: graphs.Graph, screen: pygame.Surface):
+        self.edges = []
         for row in range(graph.vertices_number):
-            vertex_color = colors[row,:].tolist()
+            vertex_color = self.vertex_colors[row,:].tolist()
             vertex_position = self.rects[row].center
 
-            pygame.draw.circle(screen, vertex_color, vertex_position, self.node_radius)
 
             for col in range(graph.vertices_number):
                 item = graph.adjacency_matrix[row,col]
                 if col >= row and item:
                     position = self.rects[col].center
-                    pygame.draw.line(screen, vertex_color,  vertex_position, position, 5)
 
-    def add_edge(self, mouse_pos: tuple[float]):
+                    self.edges.append((row, col))
+                    edge_index = len(self.edges) - 1
+                    edge_color = self.edge_colors[edge_index,:]
+
+                    pygame.draw.line(screen, edge_color,  vertex_position, position, 5)
+
+            pygame.draw.circle(screen, vertex_color, vertex_position, self.node_radius)
+
+# TODO: fix color list oveload when adding new edges
+    def add_edge(self, mouse_pos: tuple[int, int]):
         for index, rect in enumerate(self.rects):
             if rect.collidepoint(mouse_pos):
                 self.new_edge = self.check_new_edge(index)
+                self.edge_colors = np.vstack((self.edge_colors, (255,255,255)))
 
     def check_new_edge(self, end: int) -> np.ndarray:
         if end in self.new_edge:
@@ -43,3 +59,23 @@ class GraphFigure:
         elif self.new_edge[0] >= 0:
             return np.array((self.new_edge[0], end))
 
+    def change_edge_color(self, index: int, color: list[float]):
+        self.edge_colors[index,:] = color
+
+    def set_edge_color_by_vertices(self, u: int, v: int, color: list[int]):
+        for i, (a, b) in enumerate(self.edges):
+            if (a == u and b == v) or (a == v and b == u):
+                self.change_edge_color(i, color)
+                break
+
+
+    def attach_mouse(self, mouse_pos: tuple[int, int]):
+        if self.mouse_attached["is_attached"]:
+            self.mouse_attached["is_attached"] = False
+            self.mouse_attached["vertex"] = -1
+            return
+        for index, rect in enumerate(self.rects):
+            if rect.collidepoint(mouse_pos):
+                print("COLIDIU"*60)
+                self.mouse_attached["is_attached"] = True
+                self.mouse_attached["vertex"] = index
