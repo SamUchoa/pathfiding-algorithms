@@ -12,6 +12,8 @@ class GraphFigure:
         self.mouse_attached = {"is_attached": False, "vertex": -1}
         self.rects = []
 
+        #self.last_update = 0.0
+
         self.edges = []
         
         vertex_number = np.size(positions, axis=0)
@@ -24,17 +26,22 @@ class GraphFigure:
             rect.center = position
             self.rects.append(rect)
 
-    def draw_graph(self, graph: graphs.Graph, screen: pygame.Surface):
+    def draw_graph(self, graph: graphs.Graph, screen: pygame.Surface, selected_surface: pygame.Surface):
         self.edges = []
+        selected_rect = selected_surface.get_rect()
         for row in range(graph.vertices_number):
             vertex_color = self.vertex_colors[row,:].tolist()
             vertex_position = self.rects[row].center
 
 
+            if self.new_edge[0] >= 0 and self.new_edge[0] == row:
+                selected_rect.center = vertex_position
+                screen.blit(selected_surface, selected_rect)
             for col in range(graph.vertices_number):
                 item = graph.adjacency_matrix[row,col]
                 if col >= row and item:
                     position = self.rects[col].center
+
 
                     self.edges.append((row, col))
                     edge_index = len(self.edges) - 1

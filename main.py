@@ -17,6 +17,9 @@ screen = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
 pygame.display.set_caption("Pathfinding")
 
+shining_surface = pygame.image.load("light.png").convert_alpha()
+shining_small = pygame.transform.scale(shining_surface, (50, 50))  
+
 adjacency_matrix = np.array([[0,1,1,0],
                              [1,0,0,1],
                              [1,0,0,1],
@@ -31,7 +34,6 @@ positions = np.hstack((position_x, position_y))
 graph_draw_handler = draw_graphs.GraphFigure(positions, node_radius, graph.edges_number)
 graph_draw_handler.change_edge_color(1,[0,0,0])
 
-count = 0
 while True:
     mouse_pos = pygame.mouse.get_pos()
 
@@ -44,19 +46,10 @@ while True:
         graph_draw_handler.new_edge = np.array((-1,-1))
 
     print(graph_draw_handler.edge_colors)
-    #print(graph_draw_handler.mouse_attached)
 
     screen.fill(background)
 
-    graph_draw_handler.draw_graph(graph, screen)
-#    print(graph.vertices_number, graph.edges_number)
-
-    if count < graph.edges_number:
-        time.sleep(0.5)
-        graph_draw_handler.change_edge_color(count, [0,0,0])
-        count += 1
-    else:
-        count = 0
+    graph_draw_handler.draw_graph(graph, screen, shining_small)
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if graph_draw_handler.current_mode == graph_draw_handler.modes[0]:
