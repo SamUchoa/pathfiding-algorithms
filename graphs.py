@@ -20,6 +20,8 @@ class Graph:
         self.adjacency_matrix = np.delete(self.adjacency_matrix, vertex, axis=1)
 
     def add_edge(self, start_vertex: int, end_vertex: int):
+        if start_vertex == end_vertex:
+            return -1
         self.adjacency_matrix[start_vertex,end_vertex] = 1
         self.adjacency_matrix[end_vertex,start_vertex] = 1
 

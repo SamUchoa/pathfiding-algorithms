@@ -41,6 +41,7 @@ while True:
         index = graph_draw_handler.mouse_attached["vertex"]
         graph_draw_handler.rects[index].center = mouse_pos
 
+    # TODO: Check responsabilities and principles
     if graph_draw_handler.new_edge[0] >= 0 and graph_draw_handler.new_edge[1] >= 0:
         graph.add_edge(*graph_draw_handler.new_edge)
         graph_draw_handler.new_edge = np.array((-1,-1))

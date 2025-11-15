@@ -51,19 +51,18 @@ class GraphFigure:
 
             pygame.draw.circle(screen, vertex_color, vertex_position, self.node_radius)
 
-# TODO: fix color list oveload when adding new edges
     def add_edge(self, mouse_pos: tuple[int, int]):
         for index, rect in enumerate(self.rects):
             if rect.collidepoint(mouse_pos):
                 self.new_edge = self.check_new_edge(index)
-                self.edge_colors = np.vstack((self.edge_colors, (255,255,255)))
 
-    def check_new_edge(self, end: int) -> np.ndarray:
+    def check_new_edge(self, end: int):
         if end in self.new_edge:
             return self.new_edge
         if self.new_edge[0] < 0:
             return np.array((end, self.new_edge[1]))
         elif self.new_edge[0] >= 0:
+            self.edge_colors = np.vstack((self.edge_colors, (255,255,255)))
             return np.array((self.new_edge[0], end))
 
     def change_edge_color(self, index: int, color: list[float]):
@@ -83,6 +82,5 @@ class GraphFigure:
             return
         for index, rect in enumerate(self.rects):
             if rect.collidepoint(mouse_pos):
-                print("COLIDIU"*60)
                 self.mouse_attached["is_attached"] = True
                 self.mouse_attached["vertex"] = index
