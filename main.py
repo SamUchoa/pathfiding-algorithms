@@ -1,8 +1,8 @@
-import time
 import pygame 
 import numpy as np
 import draw_graphs
 import graphs
+import algorithms
 
 pygame.init()
 
@@ -20,10 +20,24 @@ pygame.display.set_caption("Pathfinding")
 shining_surface = pygame.image.load("light.png").convert_alpha()
 shining_small = pygame.transform.scale(shining_surface, (50, 50))  
 
-adjacency_matrix = np.array([[0,1,1,0],
-                             [1,0,0,1],
-                             [1,0,0,1],
-                             [0,1,1,0]])
+adjacency_matrix = np.array([
+#   0  1  2  3  4  5  6  7  8  9
+    [0, 4, 0, 0, 9, 0, 0, 0, 0, 0],  # 0
+    [4, 0, 3, 0, 0, 7, 0, 0, 0, 0],  # 1
+    [0, 3, 0, 5, 0, 0, 8, 0, 0, 0],  # 2
+    [0, 0, 5, 0, 2, 0, 0, 6, 0, 0],  # 3
+    [9, 0, 0, 2, 0, 4, 0, 0, 7, 0],  # 4
+    [0, 7, 0, 0, 4, 0, 3, 0, 0, 5],  # 5
+    [0, 0, 8, 0, 0, 3, 0, 6, 0, 9],  # 6
+    [0, 0, 0, 6, 0, 0, 6, 0, 5, 0],  # 7
+    [0, 0, 0, 0, 7, 0, 0, 5, 0, 2],  # 8
+    [0, 0, 0, 0, 0, 5, 9, 0, 2, 0],  # 9
+])
+
+#adjacency_matrix = np.array([[0,1,1,0],
+#                            [1,0,0,1],
+#                            [1,0,0,1],
+#                            [0,1,1,0]])
 
 graph = graphs.Graph(adjacency_matrix)
 position_x = np.random.randint(padding, width - padding, size=(graph.vertices_number,1))
@@ -32,7 +46,19 @@ position_y = np.random.randint(padding, height - padding, size=(graph.vertices_n
 positions = np.hstack((position_x, position_y))
 
 graph_draw_handler = draw_graphs.GraphFigure(positions, node_radius, graph.edges_number)
-graph_draw_handler.change_edge_color(1,[0,0,0])
+
+##
+a_star_gen = algorithms.a_star_step(
+    graph.adjacency_matrix,
+    start=0,
+    goal=7,
+    heuristic=lambda x: 0,
+    graph_draw_handler=graph_draw_handler
+)
+a_star_finished = False
+delay_ms = 100  
+last_step_time = 0
+##
 
 while True:
     mouse_pos = pygame.mouse.get_pos()
@@ -46,11 +72,22 @@ while True:
         graph.add_edge(*graph_draw_handler.new_edge)
         graph_draw_handler.new_edge = np.array((-1,-1))
 
-    print(graph_draw_handler.edge_colors)
+    #print(graph_draw_handler.edge_colors)
 
     screen.fill(background)
 
     graph_draw_handler.draw_graph(graph, screen, shining_small)
+    ##
+    
+    current_time = pygame.time.get_ticks()
+
+    if not a_star_finished and current_time - last_step_time >= delay_ms:
+        last_step_time = current_time
+        try:
+            step = next(a_star_gen)
+        except StopIteration:
+            a_star_finished = True
+    ##
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if graph_draw_handler.current_mode == graph_draw_handler.modes[0]:
