@@ -6,7 +6,14 @@ import graphs
 class GraphFigure:
     def __init__(self, positions: np.ndarray, node_radius: int, edges_number: int):
         self.node_radius = node_radius
-        self.modes = [0, 1, 2]
+        """
+        0 - Add Vertices
+        1 - Move Vertices
+        2 - Add Edges
+        3 - Select Start
+        4 - Select Destination
+        """
+        self.modes = [0, 1, 2, 3, 4]
         self.current_mode = self.modes[0]
         self.new_edge = np.array((-1, -1))
         self.mouse_attached = {"is_attached": False, "vertex": -1}
@@ -51,10 +58,15 @@ class GraphFigure:
 
             pygame.draw.circle(screen, vertex_color, vertex_position, self.node_radius)
 
-    def add_edge(self, mouse_pos: tuple[int, int]):
+    def get_node_from_mouse(self, mouse_pos: tuple[int,int]) -> int | None:
         for index, rect in enumerate(self.rects):
             if rect.collidepoint(mouse_pos):
-                self.new_edge = self.check_new_edge(index)
+                return index
+        return None
+
+    def add_edge(self, mouse_pos: tuple[int, int]):
+        index = self.get_node_from_mouse(mouse_pos)
+        self.new_edge = self.check_new_edge(index)
 
     def check_new_edge(self, end: int):
         if end in self.new_edge:
@@ -74,13 +86,12 @@ class GraphFigure:
                 self.change_edge_color(i, color)
                 break
 
-
     def attach_mouse(self, mouse_pos: tuple[int, int]):
         if self.mouse_attached["is_attached"]:
             self.mouse_attached["is_attached"] = False
             self.mouse_attached["vertex"] = -1
             return
-        for index, rect in enumerate(self.rects):
-            if rect.collidepoint(mouse_pos):
-                self.mouse_attached["is_attached"] = True
-                self.mouse_attached["vertex"] = index
+        index = self.get_node_from_mouse(mouse_pos)
+        if index:
+            self.mouse_attached["is_attached"] = True
+            self.mouse_attached["vertex"] = index
