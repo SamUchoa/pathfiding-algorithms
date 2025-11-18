@@ -8,7 +8,7 @@ pygame.init()
 
 height = 600
 width = 1200
-padding = 200
+padding = 100
 
 node_radius = 10
 
@@ -20,12 +20,49 @@ pygame.display.set_caption("Pathfinding")
 shining_surface = pygame.image.load("assets/light.png").convert_alpha()
 shining_small = pygame.transform.scale(shining_surface, (50, 50))  
 
+icons_size = 50
+icons_distance = 10
+
 add_vertex_icon = pygame.image.load("assets/add_vertex.png").convert_alpha()
 move_vertex_icon = pygame.image.load("assets/move_vertex.png").convert_alpha()
 add_edge_icon = pygame.image.load("assets/add_edge.png").convert_alpha()
 add_start_icon = pygame.image.load("assets/add_start.png").convert_alpha()
 add_end_icon = pygame.image.load("assets/add_end.png").convert_alpha()
-seleced_icon = pygame.image.load("assets/selected.png").convert_alpha()
+
+selected_icon = pygame.image.load("assets/selected.png").convert_alpha()
+selected_large = pygame.transform.scale(selected_icon, (icons_size, icons_size))
+selected_rect = selected_large.get_rect()
+
+icons = [
+    add_end_icon,
+    add_start_icon,
+    add_edge_icon,
+    move_vertex_icon,
+    add_vertex_icon,
+]
+
+
+def config_icons(icons: list[pygame.Surface], icons_size: float):
+    resized = []
+    for i in icons:
+        resized.append(pygame.transform.scale(i, (icons_size, icons_size)))
+    return resized
+
+def config_icon_rects(surfaces: list[pygame.Surface], icons_size: float, start_pos: int, y_pos: int, icons_distance: int):
+    rects = []
+    position = start_pos
+    for s in surfaces:
+        rect = s.get_rect()
+        rect.center = (position, y_pos)
+        rects.append(rect)
+        position -= icons_size + icons_distance
+    return rects
+
+icons = config_icons(icons, icons_size)
+icon_rects = config_icon_rects(icons, icons_size, width - padding, height - padding, 10)
+
+icons = icons[::-1]
+icon_rects = icon_rects[::-1]
 
 
 adjacency_matrix = np.array([
@@ -56,13 +93,13 @@ positions = np.hstack((position_x, position_y))
 graph_draw_handler = draw_graphs.GraphFigure(positions, node_radius, graph.edges_number)
 
 ##
-
 delay_ms = 100  
 last_step_time = 0
 ##
 
 path_start = -1
 path_destination = -2
+
 proceed_algorithm = False
 
 while True:
@@ -73,15 +110,20 @@ while True:
         graph_draw_handler.rects[index].center = mouse_pos
 
     # TODO: Check responsabilities and principles
-    if graph_draw_handler.new_edge[0] >= 0 and graph_draw_handler.new_edge[1] >= 0:
-        graph.add_edge(*graph_draw_handler.new_edge)
-        graph_draw_handler.new_edge = np.array((-1,-1))
+    if None not in graph_draw_handler.new_edge:
+        if graph_draw_handler.new_edge[0] >= 0 and graph_draw_handler.new_edge[1] >= 0:
+            graph.add_edge(*graph_draw_handler.new_edge)
+            graph_draw_handler.new_edge = np.array((-1,-1))
 
     #print(graph_draw_handler.edge_colors)
 
     screen.fill(background)
 
     graph_draw_handler.draw_graph(graph, screen, shining_small)
+    if path_start >= 0:
+        graph_draw_handler.vertex_colors[path_start,:] = [0,0,0]
+    if path_destination >= 0:
+        graph_draw_handler.vertex_colors[path_destination,:] = [0,0,0]
     ##
     current_time = pygame.time.get_ticks()
 
@@ -92,6 +134,14 @@ while True:
         except StopIteration:
             proceed_algorithm = False
     ##
+
+    for i, r in enumerate(icon_rects):
+        if i == graph_draw_handler.current_mode:
+            print(i,r.center)
+            selected_rect.center = r.center
+            screen.blit(selected_large, selected_rect)
+        screen.blit(icons[i], r)
+
     #print(path_start, path_destination)
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
