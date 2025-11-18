@@ -92,6 +92,8 @@ class GraphFigure:
             self.mouse_attached["vertex"] = -1
             return
         index = self.get_node_from_mouse(mouse_pos)
-        if index:
+        print(index)
+        if index != None:
             self.mouse_attached["is_attached"] = True
             self.mouse_attached["vertex"] = index
+            return

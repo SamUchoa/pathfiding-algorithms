@@ -84,7 +84,7 @@ while True:
         except StopIteration:
             proceed_algorithm = False
     ##
-    print(path_start, path_destination)
+    #print(path_start, path_destination)
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if graph_draw_handler.current_mode == graph_draw_handler.modes[0]:
