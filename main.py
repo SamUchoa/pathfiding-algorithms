@@ -17,8 +17,16 @@ screen = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
 pygame.display.set_caption("Pathfinding")
 
-shining_surface = pygame.image.load("light.png").convert_alpha()
+shining_surface = pygame.image.load("assets/light.png").convert_alpha()
 shining_small = pygame.transform.scale(shining_surface, (50, 50))  
+
+add_vertex_icon = pygame.image.load("assets/add_vertex.png").convert_alpha()
+move_vertex_icon = pygame.image.load("assets/move_vertex.png").convert_alpha()
+add_edge_icon = pygame.image.load("assets/add_edge.png").convert_alpha()
+add_start_icon = pygame.image.load("assets/add_start.png").convert_alpha()
+add_end_icon = pygame.image.load("assets/add_end.png").convert_alpha()
+seleced_icon = pygame.image.load("assets/selected.png").convert_alpha()
+
 
 adjacency_matrix = np.array([
 #    0  1  2  3  4  5  6  7  8  9
